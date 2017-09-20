@@ -1,0 +1,25 @@
+module.exports = {
+  "parser": "babel-eslint",
+  "env": {
+    "jest": true,
+    "es6": true,
+    "node": true
+  },
+  "plugins": [
+    "flowtype",
+    "import",
+    "prettier",
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:flowtype/recommended",
+    "prettier",
+    "prettier/flowtype",
+  ],
+  "rules": {
+    "prettier/prettier": ["error", {
+      "singleQuote": true,
+      "trailingComma": "es5"
+    }]
+  }
+};

@@ -1,0 +1,122 @@
+// @flow
+
+import Boom from 'boom';
+
+// cat default-302-redirect.asp | sed -n -e 's/.*http:\/\/mayors24.boston.gov\/Ef3\/\(.*\).xml.*/"\1": "",/p'
+const LAGAN_FORM_TO_311_SERVICE_CODE = {
+  '': '',
+  SSP_TrackCase: '',
+  SSP_ANML02_LostFound: 'ANMLLOST',
+  SSP_PARK05_NewTreeRequests: 'NWTRREQ',
+  SSP_ISD_HE1102_FoodAlert_Unconfirmed: 'FACONF',
+  SSP_ISD_HE1101_FoodAlert_Confirmed: 'FACONF',
+  SSP_ISD_HE1103_FireinFoodEstablishment: 'FIREFOOD',
+  SSP_ISD_HE1100_NoUtilities_FoodEstablishment_Flood: 'NOUTILFLD',
+  SSP_ISD_HE1097_NoUtil_FoodEstablishment_Electric: 'NOUTILELEC',
+  SSP_ISD_HE1098_NoUtilities_FoodEstablishment_Water: 'NOUTILWTR',
+  SSP_ISD_HE1099_NoUtilities_FoodEstablishment_Sewer: 'NOUTILSWR',
+  SSP_ISD_HE1096_UnsanitaryConditions_Employees: 'UCEMP',
+  SSP_ISD_HE1095_UnsanitaryConditions_Establishment: 'UCESTAB',
+  SSP_ISD_HE1094_UnsanitaryConditions_Food: 'UCFOOD',
+  SSP_ISD_WM_1006_ShortMeasureGas: 'WMGAS',
+  SSP_ISD_WM_1051_UnitPricingWrong_Missing: 'WMPRICE',
+  SSP_ISD_WM_1011_OilTruckNoPricePerGallon: 'WMOILTRK',
+  SSP_ISD_WM_1010_OilTruckShortMeasure: 'WMOILTRK',
+  SSP_ISD_WM_1009_OilTruckNoReceipt: 'WMOILTRK',
+  SSP_ISD_WM_1008_ProductShortMeasure: 'WMRWSM',
+  SSP_ISD_WM_1007_ScaleNotVisible: 'WMSCALE',
+  SSP_ISD_WM_PriceMissing: 'WMPRICE',
+  SSP_ISD_WM1005NoPriceonGasWrongPrice: 'WMGAS',
+  SSP_ISD_WM_1004_WaterinGasHighPriority: '',
+  SSP_ISD_WM_1001_ScanningOvercharge: 'WMPRICE',
+  SSP_ISD_HO1122_RentalUnitDeliveryConditions: 'RNTLUDC',
+  SSP_ISD_HO1121_BedBugs: 'BEDBUG',
+  SSP_ISD_HO1078_MiceInfestation_Residential: '',
+  SSP_ISD_HO1068_PestInfestation_Residential: '',
+  SSP_ISD_HO1076_SewageSepticBackUp: '',
+  SSP_ISD_HO1127_StudentOvercrowding: 'OVRCRWD',
+  SSP_ISD_HO1072_Overcrowding: 'OVRCRWD',
+  SSP_ISD_HO1077_CarbonMonoxide: '',
+  SSP_ISD_HO1070_CrossMetering_SubMetering: 'CRMTRSB',
+  SSP_ISD_HO1074_Heat_Excessive_Insufficient: 'HEAT',
+  SSP_ISD_HO1073_UnsatisfactoryUtilities_ElectricalP: '',
+  SSP_ISD_HO1069_ChronicDampness_Mold: '',
+  SSP_ISD_HO1066_PoorVentilation: '',
+  SSP_ISD_HO1071_MaintenanceComplaint_Residential: '',
+  SSP_ISD_HO1075_SqualidLivingConditions: 'SQUALIDLC',
+  SSP_ISD_HO1065_UnsatisfactoryLivingConditions: 'UNSATLC',
+  SSP_ISD_HO1064_NoUtilitiesResidential_Gas: '',
+  SSP_ISD_HO1063_NoUtilitiesResidential_Electricity: '',
+  SSP_ISD_HO1062_NoUtilitiesResidential_Water: '',
+  SSP_ISD_ES1002_RatBite: 'RATBITE',
+  SSP_ISD_ES1005_MosquitoesWestNile: 'STAGWTR',
+  SSP_ISD_ES1001_RodentActivity: 'RODENTACT',
+  SSP_ISD_ES1008_PigeonInfestation: 'BIRDINFEST',
+  SSP_ISD_ES1007_IllegalAutoBodyShop: 'ILGLAUTBOD',
+  SSP_ISD_ES1006_AbandonedBuilding: 'BLDGCOMPL',
+  SSP_ISD_ES1004_OverflowingorUnkeptDumpster: 'UNSANTRSH',
+  SSP_ISD_ES1003_TrashonVacantLot: 'TRSHVACLOT',
+  SSP_ISD_BU1120_BuildingInspectionRequest: '',
+  SSP_ISD_BU1093_Egress: '',
+  SSP_ISD_BU1082_Electrical: 'ELCPMTINSP',
+  SSP_ISD_BU1086_IllegalOccupancy: 'BLDGCOMPL',
+  SSP_ISD_BU1085_IllegalRoomingHouse: 'BLDGCOMPL',
+  SSP_ISD_BU1091_Maintenance_Homeowner: '',
+  SSP_ISD_BU1118_Mechanical: '',
+  SSP_ISD_BU1119_Occupying_WOut_AValid_CO_CI: '',
+  SSP_ISD_BU1083_Plumbing: 'MECPMTINSP',
+  SSP_ISD_BU1089_ProtectionofAdjoiningProperty: 'ADJPROP',
+  SSP_ISD_BU1079_UnsafeDangerousConditions: 'DGRCOND',
+  SSP_ISD_BU1087_WorkingBeyondHours: 'BLDGCOMPL',
+  SSP_ISD_BU1088_ExceedingTermsofPermit: 'BLDGCOMPL',
+  SSP_ISD_BU1080_Work_wout_Permit: 'BLDGCOMPL',
+  SSP_ISD_BU1081_Zoning: '',
+  SSP_ISD_BU1090_ADA: '',
+  SSP_HS_Disabilities_Grievance: 'DISGENREQ',
+  SSP_ISD_BU1092_ContractorsComplaint: 'PCONCMPLNT',
+  SSP_BTDT04_New_Sign: '',
+  SSP_PWDx46_NoTowComplaintConfirmation: '',
+  SSP_ISD_CE1108_PoorConditionsofProperty: '',
+  SSP_ISD_CE1008_IllegalVending: 'ILGLVEND',
+  SSP_ISD_CE1109_ConstructionDebris: 'ILGLDUMP',
+  SSP_ISD_CE1003_ParkingFrontBackYardIllegalPark: 'ILGLPRKING',
+  SSP_ISD_CE1111_IllegalPostingofSigns: 'ILGLPSTSGN',
+  SSP_ISD_CE1001_ImproperStorageofTrashBarrels: 'IMPSTRTRSH',
+  SSP_ISD_CE1110_IllegalDumping: 'ILGLDUMP',
+  SSP_PWDx35_StickerRequest: 'STCKRREQ',
+  SSP_PWDx28_RequestforRecyclingCart: 'RECCRTREQ',
+  SSP_BTDT03_AbandonedVehicles: 'ABNDVHCL',
+  SSP_PWDx11_RequestforPotholeRepair: 'REQPOTHL',
+  SSP_PWDx01_ScheduleaBulkItemPickup: 'SCHDBLKITM',
+  SSP_BTDT_MissingDamagedSign: 'MISDMGSGN',
+  SSP_Graffiti: 'GENERALGRAFFITI',
+  SSP_PARK_ParkMaintReq: 'GRNDMAINT',
+  SSP_BTDT15_ParkingEnforcement: 'PRKGENFORC',
+  SSP_PWDx28_RequestforRecyclingBin: 'RECCRTREQ',
+  SSP_PWDx20_SidewalkRepair: 'SDWRPR',
+  SSP_ISD_CE1106_SnowRemoval: 'UNSHVSDWLK',
+  SSP_PWDx03_StreetLightOutages: 'STRLGTOUT',
+  SSP_PWDx10_RequestsforSnowPlowing: 'SNOWPLOW',
+  SSP_PWDx30_EmptyLitterBasket: 'EMPLITBSKT',
+  SSP_BTDT06_TrafficSignalRepair: 'TFCSGNINSP',
+  SSP_PWDx02_MissedTrashRecyclingYardWasteBulkItem: 'MTRECYDBI',
+  SSP_PARK03_TreeMaintenanceRequests: 'TREEMAINT',
+  SSP_GEN01_GenericeFormforOtherServiceRequestTypes: 'BOS311GEN',
+};
+
+export default function eformTo311Url(
+  baseUri: ?string,
+  formId: ?string
+): string {
+  if (!baseUri) {
+    throw Boom.internal();
+  }
+
+  const serviceCode = LAGAN_FORM_TO_311_SERVICE_CODE[formId || ''];
+
+  if (serviceCode) {
+    return baseUri + 'request/' + serviceCode;
+  } else {
+    return baseUri + 'services';
+  }
+}
