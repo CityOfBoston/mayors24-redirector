@@ -1,6 +1,7 @@
 // @flow
 /* eslint no-console: 0 */
 
+import fs from 'fs';
 import Hapi from 'hapi';
 import Good from 'good';
 import Boom from 'boom';
@@ -14,7 +15,16 @@ export default async function start({ opbeat }: any) {
   reportDeployToOpbeat(opbeat);
   const server = new Hapi.Server();
 
-  server.connection({ port }, '0.0.0.0');
+  if (process.env.USE_SSL) {
+    const tls = {
+      key: fs.readFileSync('server.key'),
+      cert: fs.readFileSync('server.crt'),
+    };
+
+    server.connection({ port, tls }, '0.0.0.0');
+  } else {
+    server.connection({ port }, '0.0.0.0');
+  }
 
   server.register({
     register: Good,
