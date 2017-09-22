@@ -5,11 +5,13 @@ import Hapi from 'hapi';
 import Good from 'good';
 import Boom from 'boom';
 
+import reportDeployToOpbeat from './lib/report-deploy-to-opbeat';
 import eformTo311Url from './eforms';
 
 const port = parseInt(process.env.PORT || '3000', 10);
 
-export default async function start() {
+export default async function start({ opbeat }: any) {
+  reportDeployToOpbeat(opbeat);
   const server = new Hapi.Server();
 
   server.connection({ port }, '0.0.0.0');

@@ -9,7 +9,7 @@ require('dotenv').config();
 const opbeat = require('opbeat/start');
 
 require('./server')
-  .default()
+  .default({ opbeat })
   .catch(err => {
     opbeat.captureError(err, (e, url) => {
       if (e) {
