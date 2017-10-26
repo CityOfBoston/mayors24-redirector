@@ -40,6 +40,13 @@ Parameters:
     Description: Either 'production' or 'staging'
     Default: staging
 
+  DeployUserName:
+    Type: String
+    Description: Name of the user to be granted deploy permissions
+
+Conditions:
+  IsProduction: !Equals [!Ref Environment, "production"]
+
 Resources:
   CommonResources:
     Type: "AWS::CloudFormation::Stack"
@@ -51,6 +58,7 @@ Resources:
         Environment: !Ref Environment
         ServiceDesiredCount: !Ref ServiceDesiredCount
         CloudFormationTemplatesBucket: !Ref CloudFormationTemplatesBucket
+        DeployUserName: !Ref DeployUserName
       TemplateURL: !Sub 'https://${CloudFormationTemplatesBucket}.s3.amazonaws.com/service/common-resources.yml'
 
   WebappResources:
@@ -62,6 +70,7 @@ Resources:
         AppStack: !Ref AWS::StackName
         ShortName: !Ref ShortName
         Environment: !Ref Environment
+        Cdn: 'none'
         PublicDnsName: !Ref PublicDnsName
         LoadBalancerListenerPriority: !Ref LoadBalancerListenerPriority
         LoadBalancerHealthCheckPath: /admin/ok
@@ -129,8 +138,8 @@ Resources:
                   - "\n"
                   - Fn::Sub:
                     - |
-                      # Registry Certs
-                      Webapp for ordering certificates from the registry
+                      # mayors24 redirector
+                      Redirector for legacy 311 apps
 
                       &nbsp;
 
